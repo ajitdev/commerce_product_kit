@@ -1,0 +1,17 @@
+<?php
+/**
+ * @file
+ * Contains the definition of the field formatter.
+ */
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function commerce_pk_field_formatter_info() {
+  return array(
+    'commerce_product_kit' => array(
+      'label' => t('Product kit'),
+      'field types' => array('entityreference', 'commerce_product_reference'),
+    ),
+  );
+}
