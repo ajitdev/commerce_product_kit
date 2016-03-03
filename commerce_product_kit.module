@@ -7,7 +7,7 @@
 /**
  * Implements hook_field_formatter_info().
  */
-function commerce_pk_field_formatter_info() {
+function commerce_product_kit_field_formatter_info() {
   return array(
     'commerce_product_kit' => array(
       'label' => t('Product kit'),
@@ -19,8 +19,7 @@ function commerce_pk_field_formatter_info() {
 /**
  * Implements hook_field_formatter_view().
  */
-function commerce_pk_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
-
+function commerce_product_kit_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
   $element = array();
   if ($display['type'] == 'commerce_product_kit') {
     $product_ids = array();
@@ -80,7 +79,7 @@ function commerce_product_kit_add_cart_form_submit($form, &$form_state) {
 /**
  * Implements hook_theme().
  */
-function commerce_pk_theme($existing, $type, $theme, $path) {
+function commerce_product_kit_theme($existing, $type, $theme, $path) {
   return array(
     'commerce_product_kit' => array(
       'template' => 'templates/commerce-product-kit',
