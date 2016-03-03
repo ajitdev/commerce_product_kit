@@ -15,3 +15,78 @@ function commerce_pk_field_formatter_info() {
     ),
   );
 }
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function commerce_pk_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+
+  $element = array();
+  if ($display['type'] == 'commerce_product_kit') {
+    $product_ids = array();
+    foreach ($items as $item) {
+      if (isset($item['product_id'])) {
+        $product_ids[] = $item['product_id'];
+      }
+      elseif (module_exists('entityreference') && isset($item['target_id'])) {
+        $product_ids[] = $item['target_id'];
+      }
+    }
+    $commerce_product_kit_add_cart_form = drupal_get_form('commerce_product_kit_add_cart_form', $product_ids);
+    return array(
+      '#theme' => 'commerce_product_kit',
+      '#commerce_product_kit_form' => $commerce_product_kit_add_cart_form,
+    );
+  }
+
+  return $element;
+}
+
+/**
+ * Form which displays the single button to add the products in the kit
+ * to the cart.
+ */
+function commerce_product_kit_add_cart_form($form, &$form_state, $product_ids) {
+  $form = array();
+  $form['product_ids'] = array(
+    '#type' => 'value',
+    '#value' => $product_ids,
+  );
+  $form['add_kit_to_cart'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add the kit to cart'),
+  );
+  return $form;
+}
+
+/**
+ * Submit function to add products to the cart.
+ */
+function commerce_product_kit_add_cart_form_submit($form, &$form_state) {
+  global $user;
+  $product_ids = $form_state['values']['product_ids'];
+  if (!empty($product_ids)) {
+    // Load the referenced products.
+    $products = commerce_product_load_multiple($product_ids);
+    // Iterate over the products and add them to the cart.
+    foreach ($products as $product) {
+      $line_item = commerce_product_line_item_new($product, 1);
+      $line_item_added = commerce_cart_product_add($user->uid, $line_item);
+    }
+    drupal_set_message(t('All products from the product kit have been added to the cart.'), 'status', FALSE);
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function commerce_pk_theme($existing, $type, $theme, $path) {
+  return array(
+    'commerce_product_kit' => array(
+      'template' => 'templates/commerce-product-kit',
+      'variables' => array(
+        'commerce_product_kit_form' => array(),
+      ),
+    ),
+  );
+}
