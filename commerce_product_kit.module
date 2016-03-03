@@ -70,7 +70,11 @@ function commerce_product_kit_add_cart_form_submit($form, &$form_state) {
     // Iterate over the products and add them to the cart.
     foreach ($products as $product) {
       $line_item = commerce_product_line_item_new($product, 1);
-      $line_item_added = commerce_cart_product_add($user->uid, $line_item);
+      // For calculation of selling price. This helps in invoking the
+      // pricing or shipping rules.
+      drupal_alter('commerce_product_calculate_sell_price_line_item', $line_item);
+      rules_invoke_event('commerce_product_calculate_sell_price', $line_item);
+      $line_item = commerce_cart_product_add($user->uid, $line_item);
     }
     drupal_set_message(t('All products from the product kit have been added to the cart.'), 'status', FALSE);
   }
