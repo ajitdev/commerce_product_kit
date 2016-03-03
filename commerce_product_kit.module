@@ -5,6 +5,36 @@
  */
 
 /**
+ * Implements hook_menu().
+ */
+function commerce_product_kit_menu() {
+  $items['admin/commerce/config/product-kit'] = array(
+    'title' => 'Product Kit Settings',
+    'description' => 'Settings for the product kit',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('commerce_product_kit_admin_form'),
+    'access arguments' => array('administer commerce product kit'),
+    'file' => 'commerce_product_kit.admin.inc',
+    'parent' => 'admin/commerce/config/product-settings',
+    'weight' => 10,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function commerce_product_kit_permission() {
+  return array(
+    'administer commerce product kit' =>  array(
+      'title' => t('Administer commerce product kit'),
+      'description' => t('Perform administration task for commerce product kit module.'),
+    ),
+  );
+}
+
+/**
  * Implements hook_field_formatter_info().
  */
 function commerce_product_kit_field_formatter_info() {
@@ -46,6 +76,7 @@ function commerce_product_kit_field_formatter_view($entity_type, $entity, $field
  * to the cart.
  */
 function commerce_product_kit_add_cart_form($form, &$form_state, $product_ids) {
+  $product_kit_label = variable_get('commerce_product_kit_label', 'product kit');
   $form = array();
   $form['product_ids'] = array(
     '#type' => 'value',
@@ -53,7 +84,7 @@ function commerce_product_kit_add_cart_form($form, &$form_state, $product_ids) {
   );
   $form['add_kit_to_cart'] = array(
     '#type' => 'submit',
-    '#value' => t('Add the kit to cart'),
+    '#value' => t("Add {$product_kit_label} to cart"),
   );
   return $form;
 }
@@ -63,6 +94,7 @@ function commerce_product_kit_add_cart_form($form, &$form_state, $product_ids) {
  */
 function commerce_product_kit_add_cart_form_submit($form, &$form_state) {
   global $user;
+  $product_kit_label = variable_get('commerce_product_kit_label', 'product kit');
   $product_ids = $form_state['values']['product_ids'];
   if (!empty($product_ids)) {
     // Load the referenced products.
@@ -76,7 +108,7 @@ function commerce_product_kit_add_cart_form_submit($form, &$form_state) {
       rules_invoke_event('commerce_product_calculate_sell_price', $line_item);
       $line_item = commerce_cart_product_add($user->uid, $line_item);
     }
-    drupal_set_message(t('All products from the product kit have been added to the cart.'), 'status', FALSE);
+    drupal_set_message(t("All products from the {$product_kit_label} have been added to the cart."), 'status', FALSE);
   }
 }
 
