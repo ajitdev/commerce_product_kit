@@ -97,11 +97,10 @@ function commerce_product_kit_add_cart_form_submit($form, &$form_state) {
   $product_kit_label = variable_get('commerce_product_kit_label', 'product kit');
   $product_ids = $form_state['values']['product_ids'];
   if (!empty($product_ids)) {
-    // Load the referenced products.
-    $products = commerce_product_load_multiple($product_ids);
-    // Iterate over the products and add them to the cart.
-    foreach ($products as $product) {
-      $line_item = commerce_product_line_item_new($product, 1);
+    // Load each product and add to cart.
+    foreach ($product_ids as $product_id) {
+      $product = commerce_product_load($product_id);
+      $line_item = commerce_product_line_item_new($product);
       // For calculation of selling price. This helps in invoking the
       // pricing or shipping rules.
       drupal_alter('commerce_product_calculate_sell_price_line_item', $line_item);
