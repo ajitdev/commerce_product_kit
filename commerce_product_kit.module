@@ -61,6 +61,7 @@ function commerce_product_kit_field_formatter_view($entity_type, $entity, $field
         $product_ids[] = $item['target_id'];
       }
     }
+    $product_ids = array_count_values($product_ids);
     $commerce_product_kit_add_cart_form = drupal_get_form('commerce_product_kit_add_cart_form', $product_ids);
     return array(
       '#theme' => 'commerce_product_kit',
@@ -98,9 +99,9 @@ function commerce_product_kit_add_cart_form_submit($form, &$form_state) {
   $product_ids = $form_state['values']['product_ids'];
   if (!empty($product_ids)) {
     // Load each product and add to cart.
-    foreach ($product_ids as $product_id) {
+    foreach ($product_ids as $product_id => $quantity) {
       $product = commerce_product_load($product_id);
-      $line_item = commerce_product_line_item_new($product);
+      $line_item = commerce_product_line_item_new($product, $quantity);
       // For calculation of selling price. This helps in invoking the
       // pricing or shipping rules.
       drupal_alter('commerce_product_calculate_sell_price_line_item', $line_item);
