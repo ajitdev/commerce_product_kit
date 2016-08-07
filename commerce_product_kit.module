@@ -140,7 +140,7 @@ function commerce_product_kit_add_cart_form_submit($form, &$form_state) {
     // Find how many products were not added to the cart.
     $no_products_not_added = count($products_not_added_to_cart);
     if ($products_not_added == $total_products_in_kit) {
-      $message = t('All products from the @wardrobe have been added to the cart.', array('@wardrobe' => $matches[1]));
+      $message = t('All products from the @product_kit have been added to the cart.', array('@product_kit' => $matches[1]));
       drupal_set_message($message);
     }
     elseif ($no_products_not_added == $total_products_in_kit) {
