@@ -112,18 +112,46 @@ function commerce_product_kit_add_cart_form_submit($form, &$form_state) {
   // Get the label of the product kit from the submit button text.
   preg_match('~Add(.*?)to\ cart~', $clicked_button_text, $matches);
   $product_ids = $form_state['values']['product_ids'];
+  $total_products_in_kit = count($product_ids);
   if (!empty($product_ids)) {
+    $products_not_added_to_cart = array();
+    $products_added_to_cart = 0;
     // Load each product and add to cart.
     foreach ($product_ids as $product_id => $quantity) {
       $product = commerce_product_load($product_id);
+
+      if (module_exists('commerce_stock')) {
+        $wrapper = entity_metadata_wrapper('commerce_product', $product);
+        $product_stock = (int) $wrapper->commerce_stock->value();
+        $product_title = (string) $wrapper->title->value();
+        if ($product_stock < $quantity) {
+          $products_not_added_to_cart[] = $product_title;
+          continue;
+        }
+      }
       $line_item = commerce_product_line_item_new($product, $quantity);
+      $products_added_to_cart++;
       // For calculation of selling price. This helps in invoking the
       // pricing or shipping rules.
       drupal_alter('commerce_product_calculate_sell_price_line_item', $line_item);
       rules_invoke_event('commerce_product_calculate_sell_price', $line_item);
       $line_item = commerce_cart_product_add($user->uid, $line_item);
     }
-    drupal_set_message(t("All products from the {$matches[1]} have been added to the cart."), 'status', FALSE);
+    // Find how many products were not added to the cart.
+    $no_products_not_added = count($products_not_added_to_cart);
+    if ($products_not_added == $total_products_in_kit) {
+      $message = t('All products from the @wardrobe have been added to the cart.', array('@wardrobe' => $matches[1]));
+      drupal_set_message($message);
+    }
+    elseif ($no_products_not_added == $total_products_in_kit) {
+      $message = t('No products were added to the cart due to stock shortage.');
+      drupal_set_message($message);
+    }
+    else {
+      $products_not_added = implode(', ', $products_not_added_to_cart);
+      $message = format_plural($no_products_not_added, 'The product @product_not_added was not added to the cart because it is out of stock.', 'The products @product_not_added were not added to the cart due to stock shortage.', array('@product_not_added' => $products_not_added));
+      drupal_set_message($message);
+    }
   }
 }
 
