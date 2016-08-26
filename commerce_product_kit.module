@@ -122,11 +122,13 @@ function commerce_product_kit_add_cart_form_submit($form, &$form_state) {
 
       if (module_exists('commerce_stock')) {
         $wrapper = entity_metadata_wrapper('commerce_product', $product);
-        $product_stock = (int) $wrapper->commerce_stock->value();
-        $product_title = (string) $wrapper->title->value();
-        if ($product_stock < $quantity) {
-          $products_not_added_to_cart[] = $product_title;
-          continue;
+        if (isset($wrapper->commerce_stock)) {
+          $product_stock = (int) $wrapper->commerce_stock->value();
+          $product_title = (string) $wrapper->title->value();
+          if ($product_stock < $quantity) {
+            $products_not_added_to_cart[] = $product_title;
+            continue;
+          }
         }
       }
       $line_item = commerce_product_line_item_new($product, $quantity);
